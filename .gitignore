@@ -3,3 +3,7 @@
 
 # Ignore st binary
 st
+
+# Ignore orig and rej files
+*.orig
+*.rej
