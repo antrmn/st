@@ -40,3 +40,4 @@ int xstartdraw(void);
 void toggle_winmode(int);
 void keyboard_select(const Arg *);
 void xximspot(int, int);
+void xclearwin(void);
