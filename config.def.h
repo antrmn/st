@@ -109,6 +109,8 @@ static const char *colorname[] = {
 	"#000000",
 	"red",
     "white",
+    "gray90",
+    "white",
 };
 
 
@@ -116,6 +118,9 @@ const int indexfg = 256;
 const int indexbg = 257;
 static const int indexcs = 258;
 static const int indexrcs = 259;
+const int indexselbg = 260;
+const int indexselfg = 261;
+
 /*
  * Default colors (colorname index)
  * foreground, background, cursor, reverse cursor
@@ -124,6 +129,10 @@ unsigned int defaultfg = indexfg;
 unsigned int defaultbg = indexbg;
 static unsigned int defaultcs = indexcs;
 static unsigned int defaultrcs = indexrcs;
+unsigned int selectionbg = indexselbg;
+unsigned int selectionfg = indexselfg;
+
+static int ignoreselfg = 1;
 
 /*
  * Default style of cursor
@@ -206,6 +215,9 @@ ResourcePref resources[] = {
         { "mousefg",            INTEGER, &mousefg },
         { "mousebg",            INTEGER, &mousebg },
         { "fallbackfontcolor",  INTEGER, &defaultattr },
+        { "selectionbg",        STRING,  &colorname[indexselbg] },
+        { "selectionfg",        STRING,  &colorname[indexselfg] },
+        { "ignoreselfg",        INTEGER, &ignoreselfg },
 };
 
 char *utmp = NULL;
