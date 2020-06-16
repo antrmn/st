@@ -5,15 +5,14 @@
  *
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
-static char *font = "Iosevka:size=12:antialias=true:autohint=true";
+static char *font = "Iosevka:size=10:antialias=true:autohint=true";
 
 /* Spare fonts */
 static char *font2[] = {
-    "Noto Color Emoji:pixelsize=12:antialias=true:autohint=true"
+    "Noto Color Emoji:pixelsize=9:antialias=true:autohint=true"
 };
 
- 
-static int borderpx = 0;
+static int borderpx = 3;
 
 /*
  * What program is execed by st depends of these precedence rules:
@@ -21,38 +20,16 @@ static int borderpx = 0;
  * 2: scroll and/or utmp
  * 3: SHELL environment variable
  * 4: value of shell in /etc/passwd
- * 5: value of shell in config.h
- */
+ * 5: value of shell in config.h */
 static char *shell = "/bin/sh";
-char *utmp = NULL;
-/* scroll program: to enable use a string like "scroll" */
-char *scroll = NULL;
-char *stty_args = "stty raw pass8 nl -echo -iexten -cstopb 38400";
-
-/* identification sequence returned in DA and DECID */
-char *vtiden = "\033[?6c";
 
 /* Kerning / character bounding-box multipliers */
 static float cwscale = 1.0;
 static float chscale = 1.0;
 
-/*
- * word delimiter string
- *
- * More advanced example: L" `'\"()[]{}"
- */
-wchar_t *worddelimiters = L" ";
-
 /* selection timeouts (in milliseconds) */
 static unsigned int doubleclicktimeout = 300;
 static unsigned int tripleclicktimeout = 600;
-
-/* alt screens */
-int allowaltscreen = 1;
-
-/* allow certain non-interactive (insecure) window operations such as:
-   setting the clipboard text */
-int allowwindowops = 0;
 
 /*
  * draw latency range in ms - from new content/keypress/etc until drawing.
@@ -74,23 +51,12 @@ static unsigned int blinktimeout = 800;
  */
 static unsigned int cursorthickness = 2;
 
-/*
- * 1: render most of the lines/blocks characters without using the font for
- *    perfect alignment between cells (U2500 - U259F except dashes/diagonals).
- *    Bold affects lines thickness if boxdraw_bold is not 0. Italic is ignored.
- * 0: disable (render all U25XX glyphs normally from the font).
- */
-const int boxdraw = 0;
-const int boxdraw_bold = 0;
-
-/* braille (U28XX):  1: render as adjacent "pixels",  0: use font */
-const int boxdraw_braille = 0;
 
 /*
  * bell volume. It must be a value between -100 and 100. Use 0 for disabling
  * it
  */
-static int bellvolume = 0;
+static int bellvolume = 50;
 
 /* default TERM value */
 char *termname = "st-256color";
@@ -115,6 +81,7 @@ unsigned int tabspaces = 8;
 /* bg opacity */
 float alpha = 0.8;
 
+
 /* Terminal colors (16 first used in escape sequence) */
 static const char *colorname[] = {
 	/* 8 normal colors */
@@ -138,25 +105,27 @@ static const char *colorname[] = {
 	"white",
 
 	[255] = 0,
-
-	/* more colors can be added after 255 to use with DefaultXX */
 	"#cccccc",
-	"#555555",
-	"black",
+	"#000000",
+	"red",
+    "white",
 };
 
 
+const int indexfg = 256;
+const int indexbg = 257;
+static const int indexcs = 258;
+static const int indexrcs = 259;
 /*
  * Default colors (colorname index)
  * foreground, background, cursor, reverse cursor
  */
-unsigned int defaultfg = 7;
-unsigned int defaultbg = 258;
-static unsigned int defaultcs = 256;
-static unsigned int defaultrcs = 257;
+unsigned int defaultfg = indexfg;
+unsigned int defaultbg = indexbg;
+static unsigned int defaultcs = indexcs;
+static unsigned int defaultrcs = indexrcs;
 
 /*
- * https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h4-Functions-using-CSI-_-ordered-by-the-final-character-lparen-s-rparen:CSI-Ps-SP-q.1D81
  * Default style of cursor
  * 0: Blinking block
  * 1: Blinking block (default)
@@ -168,8 +137,8 @@ static unsigned int defaultrcs = 257;
  * 7: Blinking st cursor
  * 8: Steady st cursor
  */
-static unsigned int cursorstyle = 1;
-static Rune stcursor = 0x2603; /* snowman (U+2603) */
+static unsigned int cursorstyle = 3;
+static Rune stcursor = 0x61; /* snowman (U+2603) */
 
 /*
  * Default columns and rows numbers
@@ -191,48 +160,94 @@ static unsigned int mousebg = 0;
  */
 static unsigned int defaultattr = 11;
 
+
+/*
+ * Xresources preferences to load at startup
+ */
+ResourcePref resources[] = {
+		{ "color0",             STRING,  &colorname[0] },
+		{ "color1",             STRING,  &colorname[1] },
+		{ "color2",             STRING,  &colorname[2] },
+		{ "color3",             STRING,  &colorname[3] },
+		{ "color4",             STRING,  &colorname[4] },
+		{ "color5",             STRING,  &colorname[5] },
+		{ "color6",             STRING,  &colorname[6] },
+		{ "color7",             STRING,  &colorname[7] },
+		{ "color8",             STRING,  &colorname[8] },
+		{ "color9",             STRING,  &colorname[9] },
+		{ "color10",            STRING,  &colorname[10] },
+		{ "color11",            STRING,  &colorname[11] },
+		{ "color12",            STRING,  &colorname[12] },
+		{ "color13",            STRING,  &colorname[13] },
+		{ "color14",            STRING,  &colorname[14] },
+		{ "color15",            STRING,  &colorname[15] },
+		{ "background",         STRING,  &colorname[indexbg] },
+		{ "foreground",         STRING,  &colorname[indexfg] },
+		{ "cursorColor",        STRING,  &colorname[indexcs] },
+		{ "rcursorColor",       STRING,  &colorname[indexrcs] }, 
+		{ "termname",           STRING,  &termname },
+		{ "shell",              STRING,  &shell },
+		{ "blinktimeout",       INTEGER, &blinktimeout },
+		{ "bellvolume",         INTEGER, &bellvolume },
+		{ "tabspaces",          INTEGER, &tabspaces },
+		{ "borderpx",           INTEGER, &borderpx },
+		{ "cwscale",            FLOAT,   &cwscale },
+		{ "chscale",            FLOAT,   &chscale },
+		{ "alpha",              FLOAT,   &alpha },
+		{ "dclicktimeout",      INTEGER, &doubleclicktimeout },
+		{ "tclicktimeout",      INTEGER, &tripleclicktimeout },
+		{ "minlatency",         FLOAT,   &minlatency },
+		{ "maxlatency",         FLOAT,   &maxlatency },
+        { "cursorthickness",    INTEGER, &cursorthickness },
+        { "cursorstyle",        INTEGER, &cursorstyle },
+        { "cursorthickness",    INTEGER, &cursorthickness },
+        { "columns",            INTEGER, &cols },
+        { "rows",               INTEGER, &rows },
+        { "mousefg",            INTEGER, &mousefg },
+        { "mousebg",            INTEGER, &mousebg },
+        { "fallbackfontcolor",  INTEGER, &defaultattr },
+};
+
+char *utmp = NULL;
+/* scroll program: to enable use a string like "scroll" */
+char *scroll = NULL;
+char *stty_args = "stty raw pass8 nl -echo -iexten -cstopb 38400";
+
+/* identification sequence returned in DA and DECID */
+char *vtiden = "\033[?6c";
+
+/*
+ * word delimiter string
+ *
+ * More advanced example: L" `'\"()[]{}"
+ */
+wchar_t *worddelimiters = L" ";
+
+/* alt screens */
+int allowaltscreen = 1;
+
+/* allow certain non-interactive (insecure) window operations such as:
+   setting the clipboard text */
+int allowwindowops = 0;
+
+/*
+ * 1: render most of the lines/blocks characters without using the font for
+ *    perfect alignment between cells (U2500 - U259F except dashes/diagonals).
+ *    Bold affects lines thickness if boxdraw_bold is not 0. Italic is ignored.
+ * 0: disable (render all U25XX glyphs normally from the font).
+ */
+const int boxdraw = 1;
+const int boxdraw_bold = 1;
+
+/* braille (U28XX):  1: render as adjacent "pixels",  0: use font */
+const int boxdraw_braille = 1;
+
 /*
  * Force mouse select/shortcuts while mask is active (when MODE_MOUSE is set).
  * Note that if you want to use ShiftMask with selmasks, set this to an other
  * modifier, set to 0 to not use it.
  */
 static uint forcemousemod = ShiftMask;
-
-/*
- * Xresources preferences to load at startup
- */
-ResourcePref resources[] = {
-		{ "font",         STRING,  &font },
-		{ "color0",       STRING,  &colorname[0] },
-		{ "color1",       STRING,  &colorname[1] },
-		{ "color2",       STRING,  &colorname[2] },
-		{ "color3",       STRING,  &colorname[3] },
-		{ "color4",       STRING,  &colorname[4] },
-		{ "color5",       STRING,  &colorname[5] },
-		{ "color6",       STRING,  &colorname[6] },
-		{ "color7",       STRING,  &colorname[7] },
-		{ "color8",       STRING,  &colorname[8] },
-		{ "color9",       STRING,  &colorname[9] },
-		{ "color10",      STRING,  &colorname[10] },
-		{ "color11",      STRING,  &colorname[11] },
-		{ "color12",      STRING,  &colorname[12] },
-		{ "color13",      STRING,  &colorname[13] },
-		{ "color14",      STRING,  &colorname[14] },
-		{ "color15",      STRING,  &colorname[15] },
-		{ "background",   STRING,  &colorname[256] },
-		{ "foreground",   STRING,  &colorname[257] },
-		{ "cursorColor",  STRING,  &colorname[258] },
-		{ "termname",     STRING,  &termname },
-		{ "shell",        STRING,  &shell },
-		{ "minlatency",   INTEGER, &minlatency },
-		{ "maxlatency",   INTEGER, &maxlatency },
-		{ "blinktimeout", INTEGER, &blinktimeout },
-		{ "bellvolume",   INTEGER, &bellvolume },
-		{ "tabspaces",    INTEGER, &tabspaces },
-		{ "borderpx",     INTEGER, &borderpx },
-		{ "cwscale",      FLOAT,   &cwscale },
-		{ "chscale",      FLOAT,   &chscale },
-};
 
 /*
  * Internal mouse shortcuts.
